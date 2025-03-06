@@ -1,13 +1,28 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
+import App from './App.tsx';
 import reportWebVitals from './reportWebVitals';
+import { Auth0Provider } from '@auth0/auth0-react';
+import { ThemeProvider } from '@mui/material/styles';
+import theme from './theme';
+
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
+        <Auth0Provider
+         domain="dev-hon88oyxqdfrljz4.us.auth0.com"
+         clientId="boGswdQyfW9s1oPVDWuV825XdE1hQrJ9"
+         authorizationParams={{
+           redirect_uri: window.location.origin
+         }}
+      >
+            <ThemeProvider theme={theme}>
+   
     <App />
+    </ThemeProvider>
+    </Auth0Provider>
   </React.StrictMode>
 );
 
