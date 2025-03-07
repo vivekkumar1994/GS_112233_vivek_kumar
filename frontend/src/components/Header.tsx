@@ -14,17 +14,12 @@ const Header: React.FC = () => {
     return (
         <AppBar position="fixed" sx={{
             zIndex: (theme) => theme.zIndex.drawer + 1,
-            backgroundColor: '#1A237E',
-            color: '#FFFFFF',
+            backgroundColor: '#f5f5f5', // Light background color for the AppBar
+            color: '#333', // Dark text for contrast
             boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
         }}>
             <Toolbar sx={{ display: 'flex', alignItems: 'center' }}>
-                {/* Left-side mobile menu icon */}
-                {isMobile && (
-                    <IconButton color="inherit" edge="start" sx={{ mr: 2 }}>
-                        <MenuIcon />
-                    </IconButton>
-                )}
+           
 
                 {/* Left-aligned logo */}
                 <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
@@ -43,16 +38,16 @@ const Header: React.FC = () => {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     {isAuthenticated ? (
                         <>
-                            <Typography variant="body1" noWrap>
+                            <Typography variant="body1" noWrap sx={{ color: '#333' }}>  {/* Dark text color */}
                                 Welcome, {user?.name || 'User'}
                             </Typography>
                             <Button
                                 variant="contained"
                                 sx={{
-                                    backgroundColor: '#FF6F00',
+                                    backgroundColor: '#81C784', // Lighter green color
                                     color: '#FFFFFF',
                                     '&:hover': {
-                                        backgroundColor: '#E65100',
+                                        backgroundColor: '#66BB6A', // Darker green shade on hover
                                     }
                                 }}
                                 onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
@@ -64,10 +59,10 @@ const Header: React.FC = () => {
                         <Button
                             variant="contained"
                             sx={{
-                                backgroundColor: '#43A047',
+                                backgroundColor: '#90CAF9', // Light blue color
                                 color: '#FFFFFF',
                                 '&:hover': {
-                                    backgroundColor: '#2E7D32',
+                                    backgroundColor: '#42A5F5', // Darker blue shade on hover
                                 }
                             }}
                             onClick={() => loginWithRedirect()}
