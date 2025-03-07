@@ -12,11 +12,11 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
         <Auth0Provider
-         domain="dev-hon88oyxqdfrljz4.us.auth0.com"
-         clientId="boGswdQyfW9s1oPVDWuV825XdE1hQrJ9"
-         authorizationParams={{
-           redirect_uri: window.location.origin
-         }}
+        domain="dev-hon88oyxqdfrljz4.us.auth0.com"
+        clientId="Rru6SctIEDMStNBOOTUBGGYbH5MjMMeu"
+        authorizationParams={{
+          redirect_uri: window.location.origin
+        }}
       >
             <ThemeProvider theme={theme}>
    
