@@ -15,7 +15,7 @@ root.render(
         domain="dev-hon88oyxqdfrljz4.us.auth0.com"
         clientId="Rru6SctIEDMStNBOOTUBGGYbH5MjMMeu"
         authorizationParams={{
-          redirect_uri: window.location.origin
+          redirect_uri: 'https://melodious-beignet-2955ad.netlify.app/'
         }}
       >
             <ThemeProvider theme={theme}>
