@@ -2,7 +2,7 @@ import React from 'react';
 import { AppBar, Toolbar, Typography, Button, Box, IconButton, useMediaQuery } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useAuth0 } from '@auth0/auth0-react';
-import logo from "../images/download.jpg";
+import logo from "../images/logo.svg";
 
 const Header: React.FC = () => {
     const { loginWithRedirect, logout, isAuthenticated, user, error, isLoading } = useAuth0();
