@@ -6,45 +6,51 @@ import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 
 interface RowData {
-    store: string;
-    sku: string;
-    price: number;
-    cost: number;
-    salesUnits: number;
-    salesDollars: number;
+    Store: string;
+    SKU: string;
+    Price: number;
+    Cost: number;
+    SalesUnits: number;
+    SalesDollars: number;
     gmDollars: number;
     gmPercent: number;
 }
 
 const PlanningScreen: React.FC = () => {
-    const skus: { store: string; sku: string; price?: number; cost?: number;salesUnits:number; 
-        salesDollars:number ,gmDollars:number;gmPercent:number}[] = JSON.parse(localStorage.getItem('skus') || '[]');
+    const skus: { Store: string; SKU: string; Price?: number; Cost?: number; SalesUnits: number; salesDollars: number; gmDollars: number; gmPercent: number }[] = JSON.parse(localStorage.getItem('skus') || '[]');
     const [rowData, setRowData] = useState<RowData[]>([]);
 
     useEffect(() => {
         const data: RowData[] = skus.map((sku) => ({
-            store: sku.store,
-            sku: sku.sku,
-            price: sku.price ?? 0,
-            cost: sku.cost ?? 0,
-            salesUnits: sku.salesUnits || 0,
-            salesDollars:sku.salesDollars || 0,
-            gmDollars:sku.gmDollars || 0,
-            gmPercent:sku.gmPercent || 0,
+            Store: sku.Store,
+            SKU: sku.SKU,
+            Price: sku.Price ?? 0,
+            Cost: sku.Cost ?? 0,
+            SalesUnits: sku.SalesUnits || 0,
+            SalesDollars: sku.SalesUnits * (sku.Price ?? 0),
+            gmDollars: (sku.SalesUnits * (sku.Price ?? 0)) - (sku.SalesUnits * (sku.Cost ?? 0)),
+            gmPercent: (sku.Price && sku.Cost) ? (((sku.Price - sku.Cost) / sku.Price) * 100) : 0
         }));
         setRowData(data);
     }, []);
 
     const calculateFields = useCallback((params: any) => {
         const updatedData = rowData.map((row) => {
-            if (row.sku === params.data.sku) {
-                const salesUnits = Number(params.data.salesUnits) || 0;
-                const price = Number(params.data.price) || 0;
-                const cost = Number(params.data.cost) || 0;
-                const salesDollars = salesUnits * price;
-                const gmDollars = salesDollars - (salesUnits * cost);
-                const gmPercent = salesDollars ? (gmDollars / salesDollars) * 100 : 0;
-                return { ...row, salesUnits, salesDollars, gmDollars, gmPercent };
+            if (row.SKU === params.data.SKU) {
+                const SalesUnits = Number(row.SalesUnits) || 0;
+                const Price = Number(row.Price) || 0;
+                const Cost = Number(row.Cost) || 0;
+
+                if (SalesUnits < 0 || Price < 0 || Cost < 0) {
+                    alert('Values cannot be negative');
+                    return row;
+                }
+
+                const SalesDollars = SalesUnits * Price;
+                const gmDollars = SalesDollars - (SalesUnits * Cost);
+                const gmPercent = SalesDollars ? (gmDollars / SalesDollars) * 100 : 0;
+
+                return { ...row, SalesDollars, gmDollars, gmPercent };
             }
             return row;
         });
@@ -59,28 +65,49 @@ const PlanningScreen: React.FC = () => {
         return { backgroundColor: 'red', color: 'white' };
     };
 
+    const exportToCSV = () => {
+        // Add column headers as the first row
+        const headers = colDefs.map((col) => col.headerName).join(',');
+        const rows = rowData.map((row) => Object.values(row).join(',')).join('\n');
+    
+        // Combine headers and rows into one CSV string
+        const csvContent = headers + '\n' + rows;
+    
+        // Create a Blob and trigger the download
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute('download', 'planning_data.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     const [colDefs] = useState<ColDef[]>([
-        { field: 'store', headerName: 'Store' },
-        { field: 'sku', headerName: 'SKU' },
-        { field: 'price', headerName: 'Price', valueFormatter: ({ value }) => `$${(value || 0).toFixed(2)}` },
-        { field: 'cost', headerName: 'Cost', valueFormatter: ({ value }) => `$${(value || 0).toFixed(2)}` },
-        { field: 'salesUnits', headerName: 'Sales Units', editable: true, cellEditor: 'agNumberCellEditor' },
-        { field: 'salesDollars', headerName: 'Sales Dollars', valueFormatter: ({ value }) => `$${(value || 0).toFixed(2)}` },
+        { field: 'Store', headerName: 'Store' },
+        { field: 'SKU', headerName: 'SKU' },
+        { field: 'Price', headerName: 'Price', editable: true, cellEditor: 'agNumberCellEditor', valueFormatter: ({ value }) => `$${(value || 0).toFixed(2)}` },
+        { field: 'Cost', headerName: 'Cost', editable: true, cellEditor: 'agNumberCellEditor', valueFormatter: ({ value }) => `$${(value || 0).toFixed(2)}` },
+        { field: 'SalesUnits', headerName: 'Sales Units', editable: true, cellEditor: 'agNumberCellEditor' },
+        { field: 'SalesDollars', headerName: 'Sales Dollars', valueFormatter: ({ value }) => `$${(value || 0).toFixed(2)}` },
         { field: 'gmDollars', headerName: 'GM Dollars', valueFormatter: ({ value }) => `$${(value || 0).toFixed(2)}` },
         { field: 'gmPercent', headerName: 'GM %', valueFormatter: ({ value }) => `${(value || 0).toFixed(2)}%`, cellStyle: getGMPercentCellStyle }
     ]);
 
     return (
-        <div className="ag-theme-alpine" style={{ height: '500px', width: '100%' }}>
-            <AgGridReact
-                rowData={rowData}
-                columnDefs={colDefs}
-                defaultColDef={{ flex: 1, sortable: true, filter: true }}
-                rowSelection="single"
-                animateRows={true}
-                modules={[ClientSideRowModelModule]}
-                onCellValueChanged={calculateFields}
-            />
+        <div>
+            <button onClick={exportToCSV} style={{ margin: '10px', padding: '5px 10px' }}>Export to CSV</button>
+            <div className="ag-theme-alpine" style={{ height: '500px', width: '100%' }}>
+                <AgGridReact
+                    rowData={rowData}
+                    columnDefs={colDefs}
+                    defaultColDef={{ flex: 1, sortable: true, filter: true }}
+                    rowSelection="single"
+                    animateRows={true}
+                    modules={[ClientSideRowModelModule]}
+                    onCellValueChanged={calculateFields}
+                />
+            </div>
         </div>
     );
 };

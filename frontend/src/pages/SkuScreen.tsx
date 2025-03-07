@@ -1,25 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Box, TextField, Button, List, ListItem, ListItemText, IconButton,
-    Typography, Paper, MenuItem, Divider
+    Box, TextField, Button, Typography, Paper, MenuItem, Divider,
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton
 } from '@mui/material';
-import { Delete } from '@mui/icons-material';
+import { Delete, Edit } from '@mui/icons-material';
 
 interface SKU {
     id: string;
-    store: string;
-    sku: string;
-    price: number;
-    cost: number;
-    salesUnits: number;
+    Store: string;
+    SKU: string;
+    Price: number;
+    Cost: number;
+    SalesUnits: number;
     salesDollars: number;
     gmDollars: number;
     gmPercent: number;
-    dateAdded: string; // Ensure this field is included for the date
+    dateAdded: string;
 }
 
 const SKUManager: React.FC = () => {
-    // State Initialization with LocalStorage fallback
     const [skus, setSkus] = useState<SKU[]>(() => {
         const storedSKUs = localStorage.getItem('skus');
         return storedSKUs ? JSON.parse(storedSKUs) : [];
@@ -30,63 +29,79 @@ const SKUManager: React.FC = () => {
         return storedStores ? JSON.parse(storedStores) : [];
     });
 
-    const [store, setStore] = useState('');
-    const [sku, setSku] = useState('');
-    const [skuPrice, setSkuPrice] = useState<string>('');
-    const [skuCost, setSkuCost] = useState<string>('');
-    const [salesUnits, setSalesUnits] = useState<string>('');
+    const [Store, setStore] = useState('');
+    const [SKU, setSku] = useState('');
+    const [skuPrice, setSkuPrice] = useState('');
+    const [skuCost, setSkuCost] = useState('');
+    const [SalesUnits, setSalesUnits] = useState('');
+    const [editingId, setEditingId] = useState<string | null>(null);
 
-    // Update LocalStorage whenever SKUs change
     useEffect(() => {
-        if (skus.length > 0) {
-            localStorage.setItem('skus', JSON.stringify(skus));
-        }
+        localStorage.setItem('skus', JSON.stringify(skus));
     }, [skus]);
 
-    // Add a new SKU
-    const addSKU = () => {
-        if (store && sku && skuPrice && skuCost && salesUnits) {
-            const price = parseFloat(skuPrice);
-            const cost = parseFloat(skuCost);
-            const salesUnitsNum = parseFloat(salesUnits);
+    const addOrUpdateSKU = () => {
+        if (Store && SKU && skuPrice && skuCost && SalesUnits) {
+            const Price = parseFloat(skuPrice) || 0;
+            const Cost = parseFloat(skuCost) || 0;
+            const salesUnitsNum = parseFloat(SalesUnits) || 0;
 
-            // Validate if the values are numbers before proceeding
-            if (isNaN(price) || isNaN(cost) || isNaN(salesUnitsNum)) {
+            if (isNaN(Price) || isNaN(Cost) || isNaN(salesUnitsNum)) {
                 alert('Please ensure all fields are valid numbers.');
                 return;
             }
 
-            const salesDollars = salesUnitsNum * price;
-            const gmDollars = salesDollars - (salesUnitsNum * cost);
+            const salesDollars = salesUnitsNum * Price;
+            const gmDollars = salesDollars - (salesUnitsNum * Cost);
             const gmPercent = salesDollars > 0 ? (gmDollars / salesDollars) * 100 : 0;
 
             const newSKU: SKU = {
-                id: Date.now().toString(),
-                store,
-                sku,
-                price,
-                cost,
-                salesUnits: salesUnitsNum,
+                id: editingId || Date.now().toString(),
+                Store,
+                SKU,
+                Price,
+                Cost,
+                SalesUnits: salesUnitsNum,
                 salesDollars,
                 gmDollars,
                 gmPercent,
-                dateAdded: new Date().toLocaleDateString(), // Automatically adds current date
+                dateAdded: new Date().toLocaleDateString(),
             };
 
-            setSkus((prev) => [...prev, newSKU]);
-            localStorage.setItem('skus', JSON.stringify([...skus, newSKU]));
+            if (editingId) {
+                setSkus((prev) => prev.map((item) => (item.id === editingId ? newSKU : item)));
+                setEditingId(null);
+            } else {
+                setSkus((prev) => [...prev, newSKU]);
+            }
+
             resetFormFields();
+        } else {
+            alert('Please fill out all fields.');
         }
     };
 
-    // Remove an SKU
     const removeSKU = (id: string) => {
         const updatedSkus = skus.filter((sku) => sku.id !== id);
         setSkus(updatedSkus);
-        localStorage.setItem('skus', JSON.stringify(updatedSkus));
+    };
+    const editSKU = (sku: SKU) => {
+        console.log('Editing SKU:', sku); // Debugging line
+        setStoreOptions((prevOptions) => {
+            if (!prevOptions.includes(sku.Store)) {
+                return [...prevOptions, sku.Store];
+            }
+            return prevOptions;
+        });
+    
+        setStore(sku.Store ?? '');
+        setSku(sku.SKU ?? '');
+        setSkuPrice((sku.Price ?? '').toString());
+        setSkuCost((sku.Cost ?? '').toString());
+        setSalesUnits((sku.SalesUnits ?? '').toString());
+        setEditingId(sku.id);
     };
 
-    // Reset input fields
     const resetFormFields = () => {
         setStore('');
         setSku('');
@@ -105,7 +120,7 @@ const SKUManager: React.FC = () => {
                 <TextField
                     select
                     label="Store"
-                    value={store}
+                    value={Store}
                     onChange={(e) => setStore(e.target.value)}
                     sx={{ minWidth: 120 }}
                 >
@@ -116,61 +131,51 @@ const SKUManager: React.FC = () => {
                     ))}
                 </TextField>
 
-                <TextField
-                    label="SKU"
-                    value={sku}
-                    onChange={(e) => setSku(e.target.value)}
-                />
-
-                <TextField
-                    type="number"
-                    label="Price"
-                    value={skuPrice}
-                    onChange={(e) => setSkuPrice(e.target.value)}
-                />
-
-                <TextField
-                    type="number"
-                    label="Cost"
-                    value={skuCost}
-                    onChange={(e) => setSkuCost(e.target.value)}
-                />
-
-                <TextField
-                    type="number"
-                    label="Sales Units"
-                    value={salesUnits}
-                    onChange={(e) => setSalesUnits(e.target.value)}
-                />
+                <TextField label="SKU" value={SKU} onChange={(e) => setSku(e.target.value)} />
+                <TextField type="number" label="Price" value={skuPrice} onChange={(e) => setSkuPrice(e.target.value)} />
+                <TextField type="number" label="Cost" value={skuCost} onChange={(e) => setSkuCost(e.target.value)} />
+                <TextField type="number" label="Sales Units" value={SalesUnits} onChange={(e) => setSalesUnits(e.target.value)} />
 
                 <Button
                     variant="contained"
-                    onClick={addSKU}
-                    disabled={!store || !sku || !skuPrice || !skuCost || !salesUnits}
+                    onClick={addOrUpdateSKU}
+                    disabled={!Store || !SKU || !skuPrice || !skuCost || !SalesUnits}
                 >
-                    Add SKU
+                    {editingId ? 'Update SKU' : 'Add SKU'}
                 </Button>
             </Box>
 
             <Divider sx={{ my: 2 }} />
 
-            <List>
-                {skus.map((sku) => (
-                    <ListItem
-                        key={sku.id}
-                        secondaryAction={
-                            <IconButton edge="end" onClick={() => removeSKU(sku.id)}>
-                                <Delete />
-                            </IconButton>
-                        }
-                    >
-                        <ListItemText
-                            primary={`Store: ${sku.store}, SKU: ${sku.sku}`}
-                            secondary={`Price: $${sku.price?.toFixed(2) || '0.00'}, Cost: $${sku.cost?.toFixed(2) || '0.00'}, Sales Units: ${sku.salesUnits}, Sales Dollars: $${sku.salesDollars?.toFixed(2) || '0.00'}, GM$: $${sku.gmDollars?.toFixed(2) || '0.00'}, GM%: ${sku.gmPercent?.toFixed(2) || '0.00'}%, Date Added: ${sku.dateAdded}`}
-                        />
-                    </ListItem>
-                ))}
-            </List>
+            <TableContainer component={Paper}>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Store</TableCell>
+                            <TableCell>SKU</TableCell>
+                            <TableCell>Price</TableCell>
+                            <TableCell>Cost</TableCell>
+                            <TableCell>Sales Units</TableCell>
+                            <TableCell>Actions</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {skus.map((sku) => (
+                            <TableRow key={sku.id}>
+                                <TableCell>{sku.Store}</TableCell>
+                                <TableCell>{sku.SKU}</TableCell>
+                                <TableCell>${(sku.Price ?? 0).toFixed(2)}</TableCell>
+                                <TableCell>${(sku.Cost ?? 0).toFixed(2)}</TableCell>
+                                <TableCell>{sku.SalesUnits ?? 0}</TableCell>
+                                <TableCell>
+                                    <IconButton onClick={() => editSKU(sku)}><Edit /></IconButton>
+                                    <IconButton onClick={() => removeSKU(sku.id)}><Delete /></IconButton>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
         </Paper>
     );
 };
