@@ -1,0 +1,13 @@
+/* planning.css */
+.price-change-increase {
+    background-color: #a8e6a1;  /* Light green for increase */
+  }
+  
+  .price-change-decrease {
+    background-color: #ffcccb;  /* Light red for decrease */
+  }
+  
+  .price-change-no-change {
+    background-color: #f0f0f0;  /* Light grey for no change */
+  }
+  
