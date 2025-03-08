@@ -4,7 +4,7 @@ import { Delete } from '@mui/icons-material';
 
 interface Store {
     serialNo: string;
-    storeName: string;
+    Store: string;
     state: string;
     city: string;
 }
@@ -41,7 +41,7 @@ const StoreScreen: React.FC = () => {
         if (newStoreName.trim() && newState.trim() && newCity.trim()) {
             const newStore: Store = {
                 serialNo: `SN-${serialCounter}`, // Automated serial number
-                storeName: newStoreName.trim(),
+                Store: newStoreName.trim(),
                 state: newState.trim(),
                 city: newCity.trim()
             };
@@ -101,7 +101,7 @@ const StoreScreen: React.FC = () => {
                         {stores.map((store) => (
                             <TableRow key={store.serialNo}>
                                  <TableCell>{store.serialNo}</TableCell>
-                                <TableCell>{store.storeName}</TableCell>
+                                <TableCell>{store.Store}</TableCell>
                                 <TableCell>{store.state}</TableCell>
                                
                                 <TableCell>{store.city}</TableCell>

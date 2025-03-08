@@ -18,13 +18,20 @@ interface SKU {
     dateAdded: string;
 }
 
+interface StoreOption {
+    serialNo: string;
+    Store: string;
+    state: string;
+    city: string;
+}
+
 const SKUManager: React.FC = () => {
     const [skus, setSkus] = useState<SKU[]>(() => {
         const storedSKUs = localStorage.getItem('skus');
         return storedSKUs ? JSON.parse(storedSKUs) : [];
     });
 
-    const [storeOptions, setStoreOptions] = useState<string[]>(() => {
+    const [storeOptions, setStoreOptions] = useState<StoreOption[]>(() => {
         const storedStores = localStorage.getItem('stores');
         return storedStores ? JSON.parse(storedStores) : [];
     });
@@ -69,7 +76,12 @@ const SKUManager: React.FC = () => {
             };
 
             if (editingId) {
-                setSkus((prev) => prev.map((item) => (item.id === editingId ? newSKU : item)));
+                setSkus((prev) => prev.map((item) => {
+                    if (item.id === editingId) {
+                        return { ...newSKU, Store };
+                    }
+                    return item;
+                }));
                 setEditingId(null);
             } else {
                 setSkus((prev) => [...prev, newSKU]);
@@ -85,15 +97,8 @@ const SKUManager: React.FC = () => {
         const updatedSkus = skus.filter((sku) => sku.id !== id);
         setSkus(updatedSkus);
     };
+
     const editSKU = (sku: SKU) => {
-        console.log('Editing SKU:', sku); // Debugging line
-        setStoreOptions((prevOptions) => {
-            if (!prevOptions.includes(sku.Store)) {
-                return [...prevOptions, sku.Store];
-            }
-            return prevOptions;
-        });
-    
         setStore(sku.Store ?? '');
         setSku(sku.SKU ?? '');
         setSkuPrice((sku.Price ?? '').toString());
@@ -125,8 +130,8 @@ const SKUManager: React.FC = () => {
                     sx={{ minWidth: 120 }}
                 >
                     {storeOptions.map((storeOption) => (
-                        <MenuItem key={storeOption} value={storeOption}>
-                            {storeOption}
+                        <MenuItem key={storeOption.serialNo} value={storeOption.Store}>
+                            {storeOption.Store}
                         </MenuItem>
                     ))}
                 </TextField>
@@ -164,9 +169,9 @@ const SKUManager: React.FC = () => {
                             <TableRow key={sku.id}>
                                 <TableCell>{sku.Store}</TableCell>
                                 <TableCell>{sku.SKU}</TableCell>
-                                <TableCell>${(sku.Price ?? 0).toFixed(2)}</TableCell>
-                                <TableCell>${(sku.Cost ?? 0).toFixed(2)}</TableCell>
-                                <TableCell>{sku.SalesUnits ?? 0}</TableCell>
+                                <TableCell>${sku.Price.toFixed(2)}</TableCell>
+                                <TableCell>${sku.Cost.toFixed(2)}</TableCell>
+                                <TableCell>{sku.SalesUnits}</TableCell>
                                 <TableCell>
                                     <IconButton onClick={() => editSKU(sku)}><Edit /></IconButton>
                                     <IconButton onClick={() => removeSKU(sku.id)}><Delete /></IconButton>
