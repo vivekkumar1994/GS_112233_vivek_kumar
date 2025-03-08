@@ -4,6 +4,7 @@ import { createGrid, GridOptions } from "ag-grid-community";
 
 import { ColDef } from 'ag-grid-community';
 import { ClientSideRowModelModule } from 'ag-grid-community';
+import { Button, Box, Grid, Typography } from '@mui/material';
 
 import "../style/planning.css";
 
@@ -148,23 +149,36 @@ const PlanningScreen: React.FC = () => {
   ]);
 
   return (
-    <div>
-      <button onClick={exportToCSV} style={{ margin: '10px', padding: '5px 10px' }}>Export to CSV</button>
-      <button onClick={saveToLocalStorage} style={{ margin: '10px', padding: '5px 10px' }}>Save to Local Storage</button>
-      <div className="ag-theme-alpine" style={{ height: '500px', width: '100%' }}>
-        <AgGridReact
-          rowData={rowData}
-          columnDefs={colDefs}
-          defaultColDef={{ flex: 1, sortable: true, filter: true }}
-          pagination={true} // Enable pagination
-          paginationPageSize={10} // Set the page size to 10 rows per page
-          rowSelection="multiple"
-          animateRows={true}
-          modules={[ClientSideRowModelModule]}
-          onCellValueChanged={calculateFields}
-        />
-      </div>
+    <Box p={4}>
+    <Typography variant="h4" gutterBottom>
+      Planning Screen
+    </Typography>
+    <Grid container spacing={2} mb={2} justifyContent="center">
+      <Grid item>
+        <Button variant="contained" color="primary">
+          Export to CSV
+        </Button>
+      </Grid>
+      <Grid item>
+        <Button variant="contained" color="secondary">
+          Save to Local Storage
+        </Button>
+      </Grid>
+    </Grid>
+    <div className="ag-theme-alpine" style={{ height: 500, width: '100%' }}>
+      <AgGridReact
+        rowData={rowData}
+        columnDefs={colDefs}
+        defaultColDef={{ flex: 1, minWidth: 100, sortable: true, filter: true }}
+        pagination={true}
+        paginationPageSize={10}
+        rowSelection="multiple"
+        animateRows={true}
+        modules={[ClientSideRowModelModule]}
+        onCellValueChanged={calculateFields}
+      />
     </div>
+  </Box>
   );
 };
 
